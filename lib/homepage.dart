@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:pacman/path.dart';
@@ -205,7 +206,22 @@ class _HomePageState extends State<HomePage> {
                         crossAxisCount: numberInRow),
                     itemBuilder: (context, index) {
                       if (player == index) {
-                        return MyPlayer();
+                        switch (direction) {
+                          case "left":
+                            return Transform.rotate(
+                                angle: pi, child: MyPlayer());
+                          case "right":
+                            return MyPlayer();
+                          case "up":
+                            return Transform.rotate(
+                                angle: 3 + pi / 2, child: MyPlayer());
+                          case "down":
+                            return Transform.rotate(
+                                angle: pi / 2, child: MyPlayer());
+
+                          default:
+                            return MyPlayer();
+                        }
                       } else if (barriers.contains(index)) {
                         return MyPixel(
                           innerColor: Colors.blue[800],
