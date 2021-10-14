@@ -15,8 +15,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   static int numberInRow = 11;
-  int numberOfSquares = numberInRow * 17;
-  int player = numberInRow * 15 + 1;
+  int numberOfSquares = numberInRow * 16;
+  int player = numberInRow * 14 + 1; //pos of player
+  bool mouthClosed = false;
+  bool preGame = true;
+  int score = 0;
 
   List<int> barriers = [
     0,
@@ -121,27 +124,10 @@ class _HomePageState extends State<HomePage> {
     108,
   ];
 
-  String direction = "right";
+  List<int> food = [];
+  List<int> vis = [];
 
-  void startGame() {
-    Timer.periodic(Duration(milliseconds: 150), (timer) {
-      switch (direction) {
-        case "left":
-          moveLeft();
-          break;
-        case "right":
-          moveRight();
-          break;
-        case "up":
-          moveUp();
-          break;
-        case "down":
-          moveDown();
-          break;
-        default:
-      }
-    });
-  }
+  String direction = "right";
 
   void moveLeft() {
     if (!barriers.contains(player - 1)) {
@@ -175,6 +161,45 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void getFood() {
+    for (int i = 0; i < numberOfSquares; i++) {
+      if (!barriers.contains(i)) {
+        food.add(i);
+      }
+    }
+  }
+
+  void startGame() {
+    getFood();
+    Timer.periodic(Duration(milliseconds: 200), (timer) {
+      setState(() {
+        mouthClosed = !mouthClosed;
+      });
+
+      if (food.contains(player)) {
+        score++;
+        food.remove(player);
+        vis.add(player);
+      }
+
+      switch (direction) {
+        case "left":
+          moveLeft();
+          break;
+        case "right":
+          moveRight();
+          break;
+        case "up":
+          moveUp();
+          break;
+        case "down":
+          moveDown();
+          break;
+        default:
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -205,7 +230,15 @@ class _HomePageState extends State<HomePage> {
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: numberInRow),
                     itemBuilder: (context, index) {
-                      if (player == index) {
+                      if (mouthClosed && player == index) {
+                        return Padding(
+                          padding: EdgeInsets.all(4),
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Colors.yellow, shape: BoxShape.circle),
+                          ),
+                        );
+                      } else if (player == index) {
                         switch (direction) {
                           case "left":
                             return Transform.rotate(
@@ -214,7 +247,7 @@ class _HomePageState extends State<HomePage> {
                             return MyPlayer();
                           case "up":
                             return Transform.rotate(
-                                angle: 3 + pi / 2, child: MyPlayer());
+                                angle: 3 * pi / 2, child: MyPlayer());
                           case "down":
                             return Transform.rotate(
                                 angle: pi / 2, child: MyPlayer());
@@ -243,7 +276,7 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   Text(
-                    "Score",
+                    "Score " + score.toString(),
                     style: TextStyle(color: Colors.white, fontSize: 30),
                   ),
                   GestureDetector(
